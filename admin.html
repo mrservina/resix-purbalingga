@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RESIX — Dashboard Owner</title>
+<style>
+:root{--f:#123c2a;--l:#c9ef69;--c:#f7f4e9;--i:#183126}*{box-sizing:border-box}
+body{margin:0;background:#f8f7f1;color:var(--i);font-family:Arial,sans-serif}.wrap{max-width:850px;margin:auto;padding:25px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.logo{font-size:26px;font-weight:900;color:var(--f)}
+.badge{font-size:12px;background:var(--l);padding:8px 11px;border-radius:999px;font-weight:800}
+.panel{background:white;border:1px solid #dce3d9;border-radius:20px;padding:25px;margin-bottom:18px}
+h1{font-size:34px;margin:4px 0 8px;color:var(--f)}p{color:#66756d;line-height:1.6}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}label{font-size:12px;font-weight:800;color:#53665c}
+input,textarea{width:100%;padding:13px;margin-top:7px;border:1px solid #cdd8cc;border-radius:10px;font:inherit}textarea{min-height:90px}
+button,a.btn{border:0;border-radius:10px;padding:13px 17px;font-weight:800;text-decoration:none;cursor:pointer}
+.save{background:var(--f);color:white}.preview{background:var(--l);color:var(--f)}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.note{font-size:12px;background:#fff7cc;padding:13px;border-radius:10px;color:#5d532a}
+@media(max-width:650px){.grid{grid-template-columns:1fr}h1{font-size:28px}}
+</style></head><body><div class="wrap">
+<header><div class="logo">RESIX</div><div class="badge">OWNER DASHBOARD</div></header>
+<div class="panel"><small>Dashboard Owner</small><h1>Edit website tanpa coding.</h1>
+<p>Ubah informasi utama RESIX di bawah, lalu tekan <b>Simpan Perubahan</b>. Preview customer akan mengikuti data yang tersimpan.</p>
+<div class="note"><b>Tahap koneksi online:</b> website customer sekarang membaca data dari Supabase. Tombol simpan owner sengaja belum diaktifkan ke database sampai login owner dibuat, supaya orang lain tidak bisa mengubah data RESIX.</div></div>
+<div class="panel"><div class="grid">
+<div><label>Harga produk<input id="price" value="Rp7.000"></label></div>
+<div><label>WhatsApp (format 62...)<input id="phone" value="6283103155316"></label></div>
+<div><label>Tampilan nomor WhatsApp<input id="phoneDisplay" value="0831-0315-5316"></label></div>
+<div><label>Nama produsen<input id="producer" value="UD Mari Laundry"></label></div>
+</div>
+<label>Lokasi<textarea id="location">Desa Munjul, Kecamatan Kutasari, Kabupaten Purbalingga, Jawa Tengah</textarea></label>
+<label>Nama produk<textarea id="product">RESIX Sabun Cuci Piring 450 ml varian jeruk nipis</textarea></label>
+<div class="actions"><button class="save" onclick="alert('Login owner belum diaktifkan. Tahap berikutnya: buat akun owner Supabase Auth agar penyimpanan online aman.')">Simpan Perubahan</button><a class="btn preview" href="index.html" target="_blank">Lihat Website Customer →</a></div>
+</div></div>
+<script>
+const defaults={price:"Rp7.000",phone:"6283103155316",phoneDisplay:"0831-0315-5316",producer:"UD Mari Laundry",location:"Desa Munjul, Kecamatan Kutasari, Kabupaten Purbalingga, Jawa Tengah",product:"RESIX Sabun Cuci Piring 450 ml varian jeruk nipis"};
+function load(){let d=defaults;try{d={...defaults,...JSON.parse(localStorage.getItem("resixSite")||"{}")}}catch(e){};Object.keys(defaults).forEach(k=>document.getElementById(k).value=d[k]||"")}
+function save(){const d={};Object.keys(defaults).forEach(k=>d[k]=document.getElementById(k).value.trim());localStorage.setItem("resixSite",JSON.stringify(d));alert("Perubahan tersimpan. Buka preview customer untuk melihat hasilnya.");}
+load();
+</script></body></html>
