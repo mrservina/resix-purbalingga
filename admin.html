@@ -1,37 +1,180 @@
 <!doctype html>
-<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RESIX — Dashboard Owner</title>
-<style>
-:root{--f:#123c2a;--l:#c9ef69;--c:#f7f4e9;--i:#183126}*{box-sizing:border-box}
-body{margin:0;background:#f8f7f1;color:var(--i);font-family:Arial,sans-serif}.wrap{max-width:850px;margin:auto;padding:25px}
-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.logo{font-size:26px;font-weight:900;color:var(--f)}
-.badge{font-size:12px;background:var(--l);padding:8px 11px;border-radius:999px;font-weight:800}
-.panel{background:white;border:1px solid #dce3d9;border-radius:20px;padding:25px;margin-bottom:18px}
-h1{font-size:34px;margin:4px 0 8px;color:var(--f)}p{color:#66756d;line-height:1.6}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}label{font-size:12px;font-weight:800;color:#53665c}
-input,textarea{width:100%;padding:13px;margin-top:7px;border:1px solid #cdd8cc;border-radius:10px;font:inherit}textarea{min-height:90px}
-button,a.btn{border:0;border-radius:10px;padding:13px 17px;font-weight:800;text-decoration:none;cursor:pointer}
-.save{background:var(--f);color:white}.preview{background:var(--l);color:var(--f)}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
-.note{font-size:12px;background:#fff7cc;padding:13px;border-radius:10px;color:#5d532a}
-@media(max-width:650px){.grid{grid-template-columns:1fr}h1{font-size:28px}}
-</style></head><body><div class="wrap">
-<header><div class="logo">RESIX</div><div class="badge">OWNER DASHBOARD</div></header>
-<div class="panel"><small>Dashboard Owner</small><h1>Edit website tanpa coding.</h1>
-<p>Ubah informasi utama RESIX di bawah, lalu tekan <b>Simpan Perubahan</b>. Preview customer akan mengikuti data yang tersimpan.</p>
-<div class="note"><b>Tahap koneksi online:</b> website customer sekarang membaca data dari Supabase. Tombol simpan owner sengaja belum diaktifkan ke database sampai login owner dibuat, supaya orang lain tidak bisa mengubah data RESIX.</div></div>
-<div class="panel"><div class="grid">
-<div><label>Harga produk<input id="price" value="Rp7.000"></label></div>
-<div><label>WhatsApp (format 62...)<input id="phone" value="6283103155316"></label></div>
-<div><label>Tampilan nomor WhatsApp<input id="phoneDisplay" value="0831-0315-5316"></label></div>
-<div><label>Nama produsen<input id="producer" value="UD Mari Laundry"></label></div>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RESIX — Dashboard Owner</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--f:#123c2a;--l:#c9ef69;--c:#f7f4e9;--ink:#23372d;--muted:#718078;--line:#dce3d8}
+    *{box-sizing:border-box}
+    body{margin:0;background:#f8f7f1;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+    .wrap{max-width:760px;margin:auto;padding:28px 18px 56px}
+    header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:24px}
+    .logo{font-size:34px;font-weight:900;color:var(--f)}
+    .badge{font-size:14px;font-weight:800;background:var(--l);padding:11px 18px;border-radius:999px}
+    .panel{background:white;border:1px solid var(--line);border-radius:24px;padding:24px;margin-bottom:20px}
+    h1{font-size:38px;line-height:1.1;margin:6px 0 14px;color:var(--f)}
+    p{line-height:1.65;color:var(--muted)}
+    .note{font-size:14px;background:#fff7cc;padding:16px;border-radius:16px;color:#655b31}
+    .grid{display:grid;grid-template-columns:1fr;gap:16px}
+    label{display:block;font-weight:800;color:#5b6a62}
+    input,textarea{width:100%;padding:14px;margin-top:8px;border:1px solid #cfd8cc;border-radius:14px;font:inherit}
+    textarea{min-height:100px;resize:vertical}
+    button,a.btn{border:0;border-radius:12px;padding:14px 18px;font:inherit;font-weight:800;text-decoration:none;cursor:pointer}
+    .save{background:var(--f);color:white}
+    .preview{background:var(--l);color:#173022}
+    .secondary{background:#eef2ec;color:#32483c}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .status{margin-top:12px;font-weight:700}
+    .ok{color:#1c7a42}.bad{color:#b33a3a}
+    .hidden{display:none!important}
+    @media(max-width:650px){h1{font-size:34px}.panel{padding:20px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">RESIX</div>
+    <div class="badge">OWNER DASHBOARD</div>
+  </header>
+
+  <div class="panel">
+    <small>Dashboard Owner</small>
+    <h1>Edit website tanpa coding.</h1>
+    <p>Login sebagai owner, ubah informasi utama RESIX, lalu tekan <b>Simpan Perubahan</b>. Website customer akan membaca data terbaru dari Supabase.</p>
+    <div class="note"><b>Aman:</b> halaman ini boleh dibuka publik, tetapi perubahan database hanya diizinkan untuk akun owner yang sudah kamu buat di Supabase Auth.</div>
+  </div>
+
+  <div id="loginPanel" class="panel">
+    <h2>Login Owner</h2>
+    <div class="grid">
+      <label>Email owner
+        <input id="loginEmail" type="email" autocomplete="username" placeholder="email owner">
+      </label>
+      <label>Password
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="password owner">
+      </label>
+    </div>
+    <div class="actions">
+      <button class="save" id="loginBtn">Masuk</button>
+    </div>
+    <div id="loginStatus" class="status"></div>
+  </div>
+
+  <div id="editorPanel" class="panel hidden">
+    <div class="grid">
+      <label>Harga produk
+        <input id="price" placeholder="Rp7.000">
+      </label>
+      <label>WhatsApp (format 62...)
+        <input id="phone" placeholder="628xxxxxxxxxx">
+      </label>
+      <label>Tampilan nomor WhatsApp
+        <input id="phone_display" placeholder="08xx-xxxx-xxxx">
+      </label>
+      <label>Nama produsen
+        <input id="producer" placeholder="UD Mari Laundry">
+      </label>
+      <label>Lokasi
+        <textarea id="location"></textarea>
+      </label>
+      <label>Nama produk
+        <textarea id="product_name"></textarea>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button class="save" id="saveBtn">Simpan Perubahan</button>
+      <a class="btn preview" href="index.html" target="_blank">Lihat Website Customer ↗</a>
+      <button class="secondary" id="logoutBtn">Keluar</button>
+    </div>
+    <div id="saveStatus" class="status"></div>
+  </div>
 </div>
-<label>Lokasi<textarea id="location">Desa Munjul, Kecamatan Kutasari, Kabupaten Purbalingga, Jawa Tengah</textarea></label>
-<label>Nama produk<textarea id="product">RESIX Sabun Cuci Piring 450 ml varian jeruk nipis</textarea></label>
-<div class="actions"><button class="save" onclick="alert('Login owner belum diaktifkan. Tahap berikutnya: buat akun owner Supabase Auth agar penyimpanan online aman.')">Simpan Perubahan</button><a class="btn preview" href="index.html" target="_blank">Lihat Website Customer →</a></div>
-</div></div>
+
 <script>
-const defaults={price:"Rp7.000",phone:"6283103155316",phoneDisplay:"0831-0315-5316",producer:"UD Mari Laundry",location:"Desa Munjul, Kecamatan Kutasari, Kabupaten Purbalingga, Jawa Tengah",product:"RESIX Sabun Cuci Piring 450 ml varian jeruk nipis"};
-function load(){let d=defaults;try{d={...defaults,...JSON.parse(localStorage.getItem("resixSite")||"{}")}}catch(e){};Object.keys(defaults).forEach(k=>document.getElementById(k).value=d[k]||"")}
-function save(){const d={};Object.keys(defaults).forEach(k=>d[k]=document.getElementById(k).value.trim());localStorage.setItem("resixSite",JSON.stringify(d));alert("Perubahan tersimpan. Buka preview customer untuk melihat hasilnya.");}
-load();
-</script></body></html>
+const SUPABASE_URL = "https://wdswebcxdqjmolzhrlok.supabase.co";
+const SUPABASE_KEY = "sb_publishable_tEhnSHl8XytVZ22S_dn8UA_tPISV36O";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const fields = ["price","phone","phone_display","producer","location","product_name"];
+const loginPanel = document.getElementById("loginPanel");
+const editorPanel = document.getElementById("editorPanel");
+const loginStatus = document.getElementById("loginStatus");
+const saveStatus = document.getElementById("saveStatus");
+
+function setStatus(el, text, ok=true){
+  el.textContent = text;
+  el.className = "status " + (ok ? "ok" : "bad");
+}
+
+async function loadSettings(){
+  setStatus(saveStatus, "Memuat data...", true);
+  const { data, error } = await sb
+    .from("site_settings")
+    .select("price,phone,phone_display,producer,location,product_name")
+    .eq("id", 1)
+    .single();
+
+  if(error){
+    setStatus(saveStatus, "Gagal memuat data: " + error.message, false);
+    return;
+  }
+  fields.forEach(k => document.getElementById(k).value = data?.[k] ?? "");
+  setStatus(saveStatus, "Data RESIX siap diedit.", true);
+}
+
+async function showSession(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(session){
+    loginPanel.classList.add("hidden");
+    editorPanel.classList.remove("hidden");
+    await loadSettings();
+  } else {
+    editorPanel.classList.add("hidden");
+    loginPanel.classList.remove("hidden");
+  }
+}
+
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  setStatus(loginStatus, "Sedang masuk...", true);
+
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){
+    setStatus(loginStatus, "Login gagal: " + error.message, false);
+    return;
+  }
+  setStatus(loginStatus, "Login berhasil.", true);
+  await showSession();
+});
+
+document.getElementById("saveBtn").addEventListener("click", async () => {
+  const payload = {};
+  fields.forEach(k => payload[k] = document.getElementById(k).value.trim());
+
+  setStatus(saveStatus, "Menyimpan perubahan...", true);
+  const { error } = await sb
+    .from("site_settings")
+    .update(payload)
+    .eq("id", 1);
+
+  if(error){
+    setStatus(saveStatus, "Gagal menyimpan: " + error.message, false);
+    return;
+  }
+  setStatus(saveStatus, "Perubahan berhasil disimpan ke Supabase ✅", true);
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  await sb.auth.signOut();
+  await showSession();
+});
+
+sb.auth.onAuthStateChange(() => showSession());
+showSession();
+</script>
+</body>
+</html>
